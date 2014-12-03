@@ -123,10 +123,11 @@ public:
     void refresh() {
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
     	uint32_t blockSize = rootfs->dev->blockSize;
-        //Debug::printf("OpenFile metaData content length before = %d\n)", content->metaData.length);
+        //Debug::printf("OpenFile metaData content length before = %d\n", content->metaData.length);
     	rootfs->dev->read(start * blockSize, &content->metaData, sizeof(content->metaData));
-       // Debug::printf("OpenFile metaData content length after = %d\n)", content->metaData.length);
+        //Debug::printf("OpenFile metaData content length after = %d\n", content->metaData.length);
     	entries = content->getLength() / 16;
+    	//Debug::panic("asd\n");
     }
 
     void addEntry() {
@@ -136,9 +137,13 @@ public:
     		uint32_t type;
     		uint32_t length;
     	} metaData;
+    	rootfs->dev->read(start * blockSize, &metaData, sizeof(metaData));
+    	//Debug::printf("metaData.length was = %d\n", metaData.length);
     	metaData.type = TYPE_DIR;
     	metaData.length += DIR_ENTRY_SZ;
+    	//Debug::printf("metaData.length now = %d\n", metaData.length);
     	rootfs->dev->write(start * blockSize, &metaData, sizeof(metaData));
+
     	refresh();
     }
 

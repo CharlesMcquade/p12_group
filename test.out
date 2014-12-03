@@ -26,7 +26,23 @@ f1.txt
 f2.txt
 panic
 shell:/$ mkdir foo
-[PANIC]     parentDir is a Directory
+shell:/$ ls
+mkdir.c
+mkdir
+shutdown
+shutdown.c
+shell.c
+shell
+ls.c
+ls
+echo
+echo.c
+cat.c
+cat
+f1.txt
+f2.txt
+panic
+foo
+shell:/$ shutdown
 
 *** System Shutdown ***
-----> timeout <----
