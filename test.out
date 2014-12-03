@@ -9,4 +9,25 @@ Pit::init requested:1000Hz, actual:1000Hz
 [] loaded driver for hdd
 [] initialized root filesystem
 [] Let there be processes
+shell:/$ ls
+mkdir.c
+mkdir
+shutdown
+shutdown.c
+shell.c
+shell
+ls.c
+ls
+echo
+echo.c
+cat.c
+cat
+f1.txt
+f2.txt
+panic
+shell:/$ mkdir foo
+shell:/$ ls
+ls: command not found
+shell:/$ shutdown
+shutdown: command not found
 shell:/$ ----> timeout <----

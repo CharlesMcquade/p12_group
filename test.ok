@@ -9,7 +9,9 @@ Pit::init requested:1000Hz, actual:1000Hz
 [] loaded driver for hdd
 [] initialized root filesystem
 [] Let there be processes
-shell> ls
+shell:/$ ls
+mkdir.c
+mkdir
 shutdown
 shutdown.c
 shell.c
@@ -23,33 +25,17 @@ cat
 f1.txt
 f2.txt
 panic
-shell> echo This is cool
+shell:/$ echo This is cool
 This is cool
-shell>     echo    I know    how  to         handle  spaces   
+shell:/$     echo    I know    how  to         handle  spaces   
 I know how to handle spaces
-shell> cat f1.txt
+shell:/$ cat f1.txt
 This is f1
 It contains text
-shell>  f1.txt
+shell:/$  f1.txt
 This is f1
 It contains text
-shell> cat f1.txt f2.txt
-This is f1
-It contains text
-0
-11
-222
-3333
-44444
-555555
-shell> f2.txt f1.txt
-0
-11
-222
-3333
-44444
-555555
-shell> cat f1.txt f2.txt f1.txt f2.txt
+shell:/$ cat f1.txt f2.txt
 This is f1
 It contains text
 0
@@ -58,6 +44,14 @@ It contains text
 3333
 44444
 555555
+shell:/$ f2.txt f1.txt
+0
+11
+222
+3333
+44444
+555555
+shell:/$ cat f1.txt f2.txt f1.txt f2.txt
 This is f1
 It contains text
 0
@@ -66,10 +60,19 @@ It contains text
 3333
 44444
 555555
-shell> gcc
+This is f1
+It contains text
+0
+11
+222
+3333
+44444
+555555
+shell:/$ gcc
 gcc: command not found
-shell> cat notThere
+shell:/$ cat notThere
 cat: notThere: No such file or directory
-shell> shutdown
+shell:/$ shutdown
+
 
 *** System Shutdown ***

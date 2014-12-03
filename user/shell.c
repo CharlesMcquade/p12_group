@@ -63,10 +63,19 @@ long isElf(Elf32_Ehdr hdr) {
  * -2 => the program accepts a variable number of arguments
  * -3 => type isn't elf, CAT it
  */
-long checkProg(char* prog, char** allProgs) {
-	long i = 0;
-	while(!matches(prog, allProgs[i]) && i < NUM_PROGS) ++i;
-	if(i == NUM_PROGS) {
+long checkProg(char* prog) {
+	//long i = 0;
+	long fd = open(prog);
+	if(fd <= 0) return -1;
+	Elf32_Ehdr hdr;
+	readFully(fd, &hdr, sizeof(Elf32_Ehdr));
+	if(isElf(hdr))
+		return -2;
+	else
+		return -3;
+
+
+/*	if(i == NUM_PROGS) {
 		long file = open(prog);
 		if(file <= 0) return -1;
 		Elf32_Ehdr hdr;
@@ -82,7 +91,7 @@ long checkProg(char* prog, char** allProgs) {
 		default :  return -2; //variable args: cat, unknown, etc.
 		}
 		return -1; //prog doesn't exist
-	}
+	}*/
 }
 
 void runProg(char* in, char** allProgs) {
@@ -92,7 +101,7 @@ void runProg(char* in, char** allProgs) {
 	memset(prog, 0, 12);
 	long progIdx = 0;
 	while(in[idx] != ' ' && in[idx] != '\r' && in[idx] != 0) prog[progIdx++] = in[idx++];
-	long numArgs = checkProg(prog, allProgs);
+	long numArgs = checkProg(prog);
 	if(numArgs == -1) {
 		if(prog[0] != 0)
 			notFound(prog);
@@ -152,11 +161,11 @@ void runProg(char* in, char** allProgs) {
 				}
 				++idx;
 			}
-			puts("execcing ");
+/*			puts("execcing ");
 			puts(prog);
 			puts(" first arg = ");
 			puts(args[0]);
-			puts("\n");
+			puts("\n");*/
 			execv(prog, args);
 		}
 

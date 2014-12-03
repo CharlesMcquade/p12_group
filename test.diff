@@ -1,45 +1,15 @@
-12,75c12
-< shell> ls
-< shutdown
-< shutdown.c
-< shell.c
-< shell
-< ls.c
-< ls
-< echo
-< echo.c
-< cat.c
-< cat
-< f1.txt
-< f2.txt
-< panic
-< shell> echo This is cool
+28,74c28,30
+< shell:/$ echo This is cool
 < This is cool
-< shell>     echo    I know    how  to         handle  spaces   
+< shell:/$     echo    I know    how  to         handle  spaces   
 < I know how to handle spaces
-< shell> cat f1.txt
+< shell:/$ cat f1.txt
 < This is f1
 < It contains text
-< shell>  f1.txt
+< shell:/$  f1.txt
 < This is f1
 < It contains text
-< shell> cat f1.txt f2.txt
-< This is f1
-< It contains text
-< 0
-< 11
-< 222
-< 3333
-< 44444
-< 555555
-< shell> f2.txt f1.txt
-< 0
-< 11
-< 222
-< 3333
-< 44444
-< 555555
-< shell> cat f1.txt f2.txt f1.txt f2.txt
+< shell:/$ cat f1.txt f2.txt
 < This is f1
 < It contains text
 < 0
@@ -48,6 +18,14 @@
 < 3333
 < 44444
 < 555555
+< shell:/$ f2.txt f1.txt
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< shell:/$ cat f1.txt f2.txt f1.txt f2.txt
 < This is f1
 < It contains text
 < 0
@@ -56,12 +34,26 @@
 < 3333
 < 44444
 < 555555
-< shell> gcc
+< This is f1
+< It contains text
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< shell:/$ gcc
 < gcc: command not found
-< shell> cat notThere
+< shell:/$ cat notThere
 < cat: notThere: No such file or directory
-< shell> shutdown
+---
+> shell:/$ mkdir foo
+> shell:/$ ls
+> ls: command not found
+76,78c32,33
+< 
 < 
 < *** System Shutdown ***
 ---
+> shutdown: command not found
 > shell:/$ ----> timeout <----
