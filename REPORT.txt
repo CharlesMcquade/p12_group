@@ -1,0 +1,58 @@
+
+- Explain how the arguments make it all the way from user program invoking
+  execv until they turn into main's argc, and argv for the target program
+  	This goes into system call handler, and sys.S has arguments on the stack, 
+  	user implementation. System call handler grabs the arguments off the stack 
+  	and puts them in a queue. Then execv in process.cc takes them off the queue
+  	and puts them in the user stack itself, like so:
+  	
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	--------------------
+  	----char* argv[1]---
+  	----char* argv[0]---  .
+  	----argv[1]---------  .
+  	----argv[0]--------- +8
+  	---- argc ---------- +4 
+  	-------------------- <---- %esp
+
+
+  	argv[0] has the address to the first character of the char* it is pointing to, since argv is a char**. 
+  	After each char*, there is an extra 0-byte in between to indicate null-termination. 
+  	When main runs, it grabs argc and argv by taking dereferencing esp. The stack is set up in process.cc::execv
+
+- My implementation of execv in syscall.cc is not secure. Show a user
+  program that can read any memory address by exploiting my bad code
+
+  Any user program can call execv, so...
+  foo.c:
+  	void main() {
+  		char** argv = malloc(sizeof(char*));
+  		argv[0] = (char*)0x1000; (or ANY address)
+  		char* prog = "echo";
+  		execv(prog, argv);
+  		return 0;
+  	}
+
+	could theoretically print anything at an arbitrary memory address.
+	The program does not specifcally even need to be echo, since the user could create their own program that reads an entire address and then
+	have another program that execs that. Simply put, having two programs, where one execv's the other, the execcing program can pass an arbitrary
+	address casted as char** to read anywhere in memory. 
+
+- How would change the code to protect against this attack
+	Check for validity, check that the memory passed has correct permissions for the person trying to access it(traverse Process::current.addressSpace's table for where the address would point to and determine if the bits allow for user to read)
+	
+
+- What do we need to change in order to implement input and output
+  redirection and pipes in the shell?
+
+  We need to change our method of outputting and taking in data. We output using debug statements right now, it would need to instead hook up to some device which is attached to an arbitrary location, mounted in the filesystem somewhere. We would also need to complete the filesystem by adding the ability to modify and write into the filesystem. We would also need a buffer for writing, in order to avoid problems like not modifying an incomplete set of data. 
+
+  For pipes, we would also need a buffer for data as well as a file descriptor for output/input so that children and parents can have different modes of redirection and individual or even shared states.  
+
