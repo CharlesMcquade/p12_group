@@ -25,7 +25,213 @@ cat
 f1.txt
 f2.txt
 panic
-shell:/$ mkdir foo
+shell:/$ mkdir DIR1
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 248
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR1
+    entry.start = 806 
+                 amWritten = 16
+shell:/$ mkdir DIR2
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 264
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR2
+    entry.start = 805 
+                 amWritten = 16
+shell:/$ mkdir DIR3
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 280
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR3
+    entry.start = 804 
+                 amWritten = 16
+shell:/$ mkdir DIR4
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 296
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR4
+    entry.start = 803 
+                 amWritten = 16
+shell:/$ mkdir DIR5
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 312
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR5
+    entry.start = 802 
+                 amWritten = 16
+shell:/$ mkdir DIR6
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 328
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR6
+    entry.start = 801 
+                 amWritten = 16
+shell:/$ mkdir DIR7
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 344
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR7
+    entry.start = 800 
+                 amWritten = 16
+shell:/$ mkdir DIR8
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 360
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR8
+    entry.start = 799 
+                 amWritten = 16
+shell:/$ mkdir DIR9
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 376
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR9
+    entry.start = 798 
+                 amWritten = 16
+shell:/$ mkdir DIR10
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 392
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR10
+    entry.start = 797 
+                 amWritten = 16
+shell:/$ mkdir DIR11
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 408
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR11
+    entry.start = 796 
+                 amWritten = 16
+shell:/$ mkdir DIR12
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 424
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR12
+    entry.start = 795 
+                 amWritten = 16
+shell:/$ mkdir DIR13
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 440
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR13
+    entry.start = 794 
+                 amWritten = 16
+shell:/$ mkdir DIR14
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 456
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR14
+    entry.start = 793 
+                 amWritten = 16
+shell:/$ mkdir DIR15
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 472
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR15
+    entry.start = 792 
+                 amWritten = 16
+shell:/$ mkdir DIR16
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 488
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR16
+    entry.start = 791 
+                 amWritten = 16
+shell:/$ mkdir DIR17FOO
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 504
+         prevBlk = 0
+         blkToGet = 1023
+ now blkToGet = 1023
+    entry.name = DIR17FOO
+    entry.start = 790 
+                 amWritten = 8
+    need to write in a new block... 
+    Writing at block 789 8 more bytes
+       addr of entry = 1084872 and incremented address is 1084880
 shell:/$ ls
 mkdir.c
 mkdir
@@ -42,7 +248,73 @@ cat
 f1.txt
 f2.txt
 panic
-foo
+DIR1
+DIR2
+DIR3
+DIR4
+DIR5
+DIR6
+DIR7
+DIR8
+DIR9
+DIR10
+DIR11
+DIR12
+DIR13
+DIR14
+DIR15
+DIR16
+DIR17FOODIR17FOO
+shell:/$ mkdir DIR18
+in mkdir..
+making new directory
+    parentDir is a Directory
+    Seeking...
+        offsetInBlk = 520
+         prevBlk = 0
+         blkToGet = 1023
+        offsetInBlk = 8
+         prevBlk = 1023
+         blkToGet = 0
+ Reached end of directory, need to find a new place...
+ now blkToGet = 787
+    entry.name = DIR18
+    entry.start = 788 
+                 amWritten = 16
+shell:/$ ls
+mkdir.c
+mkdir
+shutdown
+shutdown.c
+shell.c
+shell
+ls.c
+ls
+echo
+echo.c
+cat.c
+cat
+f1.txt
+f2.txt
+panic
+DIR1
+DIR2
+DIR3
+DIR4
+DIR5
+DIR6
+DIR7
+DIR8
+DIR9
+DIR10
+DIR11
+DIR12
+DIR13
+DIR14
+DIR15
+DIR16
+DIR17FOODIR17FOO
+&
 shell:/$ shutdown
 
 *** System Shutdown ***

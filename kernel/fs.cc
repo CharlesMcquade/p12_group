@@ -78,6 +78,7 @@ public:
         }
         return length;
     }
+
 };
 
 class Fat439File : public File {
@@ -150,15 +151,18 @@ public:
 
     long mkdir(const char* name) {
 
-    	//Debug::printf("in mkdir..\n");
+    	Debug::printf("in mkdir..\n");
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
     	uint32_t blockSize = rootfs->dev->blockSize;
 
     	uint32_t blockToUse = rootfs->remNextAvail();
-    	if(!blockToUse)
+    	if(!blockToUse) {
+    		Debug::printf("no avail blocks\n");
     		return ERR_NO_SPACE;
+    	}
     	else {
-    	    struct {
+    	    Debug::printf("making new directory\n");
+    		struct {
     	        uint32_t type;
     	        uint32_t length;
     	    } metaData;
@@ -172,34 +176,37 @@ public:
     	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR)
     		return ERR_NOT_DIR;
 
-    	//Debug::panic("    parentDir is a Directory\n");
+    	Debug::printf("    parentDir is a Directory\n");
 
-
+    	mutex.lock();
     	uint32_t offsetInBlk = ((Fat439Directory*)this)->content->getLength() + HEADER_SZ;
     	uint32_t prevBlk = 0;
     	uint32_t blkToGet = start;
-    	/*Debug::printf("    Seeking...\n");
+    	Debug::printf("    Seeking...\n");
     	Debug::printf("        offsetInBlk = %d\n "
     			"        prevBlk = %d\n "
-    			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);*/
+    			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);
     	while(offsetInBlk >= FileSystem::rootfs->dev->blockSize && blkToGet != 0) {
     		offsetInBlk -= FileSystem::rootfs->dev->blockSize;
     		prevBlk = blkToGet;
     		blkToGet = rootfs->nextBlk(blkToGet);
-        	/*Debug::printf("        offsetInBlk = %d\n "
+        	Debug::printf("        offsetInBlk = %d\n "
         			"        prevBlk = %d\n "
-        			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);*/
+        			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);
     	} if(blkToGet == 0) {
-    		//Debug::printf(" Reached end of directory, need to find a new place...\n");
+    		Debug::printf(" Reached end of directory, need to find a new place...\n");
     		uint32_t newBlk = rootfs->remNextAvail();
     		rootfs->setNextBlk(prevBlk, newBlk);
     		blkToGet = newBlk;
     	}
+    		Debug::printf(" now blkToGet = %d\n", blkToGet);
 
     	struct{
     		char name[12];
     		uint32_t start;
     	}entry;
+    	memset(&entry, 0, 12);
+
     	uint32_t ni = 0;
     	while(name[ni] != 0 && ni < 12) {
     		entry.name[ni] = name[ni];
@@ -207,20 +214,26 @@ public:
     	} if(ni < 12) entry.name[ni] = 0;
     	entry.start = blockToUse;
 
-    	//Debug::printf("    entry.name = %s .... entry.start = %d \n", entry.name, entry.start);
-    	uint32_t amWritten = rootfs->dev->write(blkToGet * blockSize + offsetInBlk, &entry, sizeof(entry));
-/*    	Debug::printf("    wrote amWritten = %d, blkToGet + offsetInBlk = %d, sizeof(entry) = %d\n",
-    			amWritten, blkToGet + offsetInBlk, sizeof(entry));*/
+    	char* buf = new char[16];
+    	memcpy(buf, &entry, 16);
+    	Debug::printf("    entry.name = %s\n    entry.start = %d \n", entry.name, entry.start);
+    	Debug::printf("    ");
+    	uint32_t amWritten = rootfs->dev->write(blkToGet * blockSize + offsetInBlk, buf, sizeof(entry));
+    	Debug::printf("             amWritten = %d\n", amWritten);
     	if(amWritten < sizeof(entry)) {
-    		//Debug::printf("    need to write in a new block... \n");
+    		Debug::printf("    need to write in a new block... \n");
     		prevBlk = blkToGet;
-    		uint32_t nextBlkToGet = rootfs->remNextAvail();
-    		if(!nextBlkToGet)
+    		blkToGet = rootfs->remNextAvail();
+    		if(!blkToGet)
     			return ERR_NO_SPACE;
-    		rootfs->setNextBlk(prevBlk, nextBlkToGet);
-    		rootfs->dev->write(nextBlkToGet * blockSize,
-    				(void*)((uint32_t*)&entry + amWritten/sizeof(uint32_t*)),
+    		rootfs->setNextBlk(prevBlk, blkToGet);
+    		Debug::printf("    Writing at block %d %d more bytes\n", blkToGet, sizeof(entry) - amWritten);
+    		Debug::printf("       addr of entry = %d and incremented address is %d\n", &entry, (uint32_t)&entry + amWritten);
+
+    		rootfs->dev->write(blkToGet * blockSize,
+    				(void*)((uint32_t)&buf + amWritten),
     				sizeof(entry) - amWritten);
+    	delete buf;
     	}
 
     	/*Debug::printf("    double checking the name and stuff were copied correctly...\n");
@@ -234,6 +247,7 @@ public:
     	Debug::printf("    done\n");*/
 
     	addEntry();
+    	mutex.unlock();
     	return 0;
     }
 
@@ -349,7 +363,7 @@ uint32_t Fat439::remNextAvail() {
 	if(nextAvail == 0)
 		return 0;
 	super.avail = fat[super.avail];
-	fat[super.avail] = 0;
+	fat[nextAvail] = 0;
 	return nextAvail;
 }
 
