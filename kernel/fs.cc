@@ -167,7 +167,7 @@ public:
     	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR)
     		return ERR_NOT_DIR;
 
-    	//Debug::printf("    parentDir is a Directory\n");
+    	//Debug::panic("    parentDir is a Directory\n");
 
 
     	uint32_t offsetInBlk = ((Fat439Directory*)this)->content->getLength() + HEADER_SZ;

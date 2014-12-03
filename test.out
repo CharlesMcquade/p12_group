@@ -26,8 +26,7 @@ f1.txt
 f2.txt
 panic
 shell:/$ mkdir foo
-shell:/$ ls
-ls: command not found
-shell:/$ shutdown
-shutdown: command not found
-shell:/$ ----> timeout <----
+[PANIC]     parentDir is a Directory
+
+*** System Shutdown ***
+----> timeout <----

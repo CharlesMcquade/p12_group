@@ -1,4 +1,4 @@
-28,74c28,30
+28,76c28,29
 < shell:/$ echo This is cool
 < This is cool
 < shell:/$     echo    I know    how  to         handle  spaces   
@@ -46,14 +46,10 @@
 < gcc: command not found
 < shell:/$ cat notThere
 < cat: notThere: No such file or directory
+< shell:/$ shutdown
+< 
 ---
 > shell:/$ mkdir foo
-> shell:/$ ls
-> ls: command not found
-76,78c32,33
-< 
-< 
-< *** System Shutdown ***
----
-> shutdown: command not found
-> shell:/$ ----> timeout <----
+> [PANIC]     parentDir is a Directory
+78a32
+> ----> timeout <----

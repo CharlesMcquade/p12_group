@@ -67,13 +67,13 @@ long checkProg(char* prog) {
 	//long i = 0;
 	long fd = open(prog);
 	if(fd <= 0) return -1;
-	Elf32_Ehdr hdr;
-	readFully(fd, &hdr, sizeof(Elf32_Ehdr));
-	if(isElf(hdr))
+	/*Elf32_Ehdr hdr;
+	readFully(fd, &hdr, sizeof(Elf32_Ehdr));*/
+/*	if(isElf(hdr))
 		return -2;
 	else
-		return -3;
-
+		return -3;*/
+	return -2;
 
 /*	if(i == NUM_PROGS) {
 		long file = open(prog);
