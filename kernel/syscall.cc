@@ -145,6 +145,15 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
     	FileSystem::rootfs->rootdir->listFiles();
     	return 0;
     }
+
+
+  //------- p12 additions --------//
+    case 16: /*mkdir*/
+    {
+    	char* fileName = (char*)a0;
+    	char** filePath = (char**)a1;
+
+    }
     default:
         Process::trace("syscall(%d,%d,%d)",num,a0,a1);
         return -1;

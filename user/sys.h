@@ -1,6 +1,10 @@
 #ifndef _SYS_H_
 #define _SYS_H_
 
+//p12 additions
+extern long mkdir(char* fileName, char** filePath);
+
+
 extern long ls();
 extern long exit(long status);
 extern long execv(char* prog, char** args);

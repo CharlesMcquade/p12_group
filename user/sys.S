@@ -159,3 +159,20 @@ ls:
 	int $100
 	ret
 
+
+
+
+
+#
+#    					p12 additions
+#
+
+	# long mkdir(char* fileName, char** filePath)
+	.global mkdir
+mkdir:
+	mov $16, %eax
+	mov 4(%esp), %ecx
+	mov 8(%esp), %edx
+	int $100
+	ret
+
