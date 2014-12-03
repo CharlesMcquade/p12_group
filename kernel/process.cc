@@ -129,11 +129,14 @@ void Process::kill(long code) {
 }
 
 long Process::execv(const char* fileName, SimpleQueue<const char*> *args, long argc) {
-    File *prog = FileSystem::rootfs->rootdir->lookupFile(fileName);
+    Debug::printf("looking for %s\n", fileName);
+	File *prog = FileSystem::rootfs->rootdir->lookupFile(fileName);
     if (prog == nullptr) {
-        return ERR_NOT_FOUND;
+        Debug::printf("Couldn't find it\n");
+    	return ERR_NOT_FOUND;
     }
 
+    Debug::printf("found it, preparing address space\n");
     /* Prepare address space for exec */
     addressSpace.exec();
     argc+=1;

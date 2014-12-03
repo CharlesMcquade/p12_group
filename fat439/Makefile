@@ -12,7 +12,7 @@ mkfs : mkfs.o
 .SECONDARY :
 
 
-FILES = ../user/shutdown ../user/shutdown.c ../user/shell.c ../user/shell ../user/ls.c ../user/ls ../user/echo ../user/echo.c ../user/cat.c ../user/cat f1.txt f2.txt panic
+FILES = ../user/mkdir.c ../user/mkdir ../user/shutdown ../user/shutdown.c ../user/shell.c ../user/shell ../user/ls.c ../user/ls ../user/echo ../user/echo.c ../user/cat.c ../user/cat f1.txt f2.txt panic
 
 ../user/% :
 	make -C ../user

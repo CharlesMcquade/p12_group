@@ -4,6 +4,7 @@
 #include "process.h"
 #include "child.h"
 #include "fs.h"
+
 #include "err.h"
 #include "u8250.h"
 #include "libk.h"
@@ -150,9 +151,18 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
   //------- p12 additions --------//
     case 16: /*mkdir*/
     {
-    	char* fileName = (char*)a0;
-    	char** filePath = (char**)a1;
-
+    	const char* fileName =  (const char*)a0;
+    	const char** filePath = (const char**)a1;
+    	Directory* dir = FileSystem::rootfs->rootdir;
+    	//Debug::printf("here : %s:%d  -- checking file path\n ",__FILE__,__LINE__);
+    	if(filePath[0]) {
+        	//Debug::printf("here : %s:%d  -- filePath[0] = %s\n",__FILE__,__LINE__, filePath[0]);
+    		dir = (FileSystem::rootfs->rootdir)->lookupDirectory(filePath);
+    	if(!dir)
+    		return ERR_NOT_FOUND;
+    	}
+    	//Debug::printf("here : %s:%d   --- about to return\n",__FILE__,__LINE__);
+    	return dir->mkdir(fileName);
     }
     default:
         Process::trace("syscall(%d,%d,%d)",num,a0,a1);

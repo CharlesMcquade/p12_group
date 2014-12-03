@@ -9,4 +9,4 @@ Pit::init requested:1000Hz, actual:1000Hz
 [] loaded driver for hdd
 [] initialized root filesystem
 [] Let there be processes
-shell:/directory/hierarchy/systems/rock$ 
+shell:/$ ----> timeout <----

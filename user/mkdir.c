@@ -5,5 +5,6 @@ int main(int argc, char** argv) {
 	char** filePath = &argv[2];
 
 	long success = mkdir(fileName, filePath);
+	//TODO: handle errors
 	return success;
 }

@@ -143,7 +143,7 @@ public:
     }
 
 
-    long mkdir(const char* name, Directory* parentDir) {
+    long mkdir(const char* name) {
 
     	//Debug::printf("in mkdir..\n");
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
@@ -164,13 +164,13 @@ public:
 
 
 
-    	if(((Fat439Directory*)parentDir)->content->getType() != TYPE_DIR)
+    	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR)
     		return ERR_NOT_DIR;
 
     	//Debug::printf("    parentDir is a Directory\n");
 
 
-    	uint32_t offsetInBlk = ((Fat439Directory*)parentDir)->content->getLength() + HEADER_SZ;
+    	uint32_t offsetInBlk = ((Fat439Directory*)this)->content->getLength() + HEADER_SZ;
     	uint32_t prevBlk = 0;
     	uint32_t blkToGet = start;
     	/*Debug::printf("    Seeking...\n");

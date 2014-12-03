@@ -73,9 +73,10 @@ public:
     FileSystem* fs;
     Directory(FileSystem *fs) : fs(fs){}
     //mkdir will need a mutex on the FAT.
-    virtual long mkdir(const char* name, Directory* parentDir) = 0;
+    virtual long mkdir(const char* name) = 0;
     virtual File* lookupFile(const char* name) = 0;
     virtual Directory* lookupDirectory(const char *name) = 0;
+    virtual Directory* lookupDirectory(const char** path) = 0;
     virtual void listFiles() = 0;
 
 };

@@ -1,7 +1,7 @@
 #include "libc.h"
 #include "stdint.h"
 
-#define NUM_PROGS (4)
+#define NUM_PROGS (6)
 #define MAX_PROG_SZ (12)
 
 
@@ -152,6 +152,11 @@ void runProg(char* in, char** allProgs) {
 				}
 				++idx;
 			}
+			puts("execcing ");
+			puts(prog);
+			puts(" first arg = ");
+			puts(args[0]);
+			puts("\n");
 			execv(prog, args);
 		}
 
@@ -202,23 +207,7 @@ int main() {
 
 	currDir = root;
 
-	//debug code
-	/*char** stoo = malloc(sizeof(char*) * 4);
-	stoo[0] = "directory";
-	stoo[1] = "hierarchy";
-	stoo[2] = "systems";
-	stoo[3] = "rock";
-
-	dir* thisDir = currDir;
-	long i;
-	for(i = 0; i < 4; i++) {
-		thisDir->nextDir = malloc(sizeof(dir));
-		thisDir = (dir*)thisDir->nextDir;
-		thisDir->currDir = stoo[i];
-	}*/
-
-
-	char** allProgs = malloc(sizeof(char*) * 6);
+	char** allProgs = malloc(sizeof(char*) * NUM_PROGS);
 	allProgs[0] = "ls";
 	allProgs[1] = "echo";
 	allProgs[2] = "cat";

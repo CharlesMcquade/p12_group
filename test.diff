@@ -64,4 +64,4 @@
 < 
 < *** System Shutdown ***
 ---
-> /directory/hierarchy/systems/rockshell:/directory/hierarchy/systems/rock$ ----> timeout <----
+> shell:/$ ----> timeout <----
