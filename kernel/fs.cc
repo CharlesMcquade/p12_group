@@ -286,6 +286,18 @@ public:
 
         return new Fat439Directory(content->fs,idx);
     }
+
+    Directory* lookupDirectory(const char** path) {
+    	uint32_t pathNum = 0;
+    	uint32_t idx;
+    	do {
+    		idx = lookup(path[pathNum]);
+    		if(idx) ++pathNum;
+    	} while((long)path[pathNum] && idx > 0);
+    	if(idx)
+    		return new Fat439Directory(content->fs, idx);
+    	return nullptr;
+    }
 };
 
 Fat439::Fat439(BlockDevice *dev) : FileSystem(dev) {
