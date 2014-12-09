@@ -9,6 +9,8 @@
 #define ERR_PAGE_FAULT (-1005)
 #define ERR_NO_SPACE (-1006)
 #define ERR_NOT_DIR (-1007)
+#define ERR_NO_ROOT_SPACE (-1008)
+#define ERR_DEVWRITE (-1009)
 
 
 #endif

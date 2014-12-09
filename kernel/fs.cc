@@ -79,6 +79,79 @@ public:
         return length;
     }
 
+    void resize(uint32_t newsz) {
+    	Debug::printf("resizing\n");
+    	metaData.length = newsz;
+    	fs->dev->write(start * 512, &metaData, sizeof(metaData));
+    }
+
+    int32_t append(void* buf, uint32_t length) {
+        	fs->openFilesMutex.lock();
+        	//Debug::printf("in mutex lock\n");
+        	uint32_t actualOffset = metaData.length + 8;
+        	uint32_t len = min(length, fs->dev->blockSize - actualOffset);
+        	uint32_t blockInFile = actualOffset / 512;
+        	uint32_t offsetInBlock = actualOffset % 512;
+
+        	uint32_t blockNumber = start;
+
+        	for(uint32_t i = 0; i<blockInFile; i++) {
+        		blockNumber = fs->fat[blockNumber];
+        	}
+
+        	//Debug::printf("block to write at = %d, offset in block = %d\n", blockNumber, offsetInBlock);
+        	uint32_t totalWritten = 0;
+        	uint32_t written = fs->dev->write(blockNumber * fs->dev->blockSize + offsetInBlock, buf, len);
+        	totalWritten += written;
+        	length -= written;
+        	//if length != 0, need to go into a new block
+        	while(length > 0) {
+    			Debug::printf("writing again\n");
+        		uint32_t nextBlk = fs->remNextAvail();
+    			if(!nextBlk) { //resize and return amount written if no more space
+    				resize(metaData.length + totalWritten);
+    				fs->openFilesMutex.unlock();
+    				return totalWritten;
+    			}
+    			fs->setNextBlk(blockNumber, nextBlk);
+    			blockNumber = nextBlk;
+    			char* byteBuf = (char*)buf;
+    			len = min(length, fs->dev->blockSize);
+    			written = fs->dev->write(blockNumber * fs->dev->blockSize, &byteBuf[totalWritten], len);
+    			length -= written;
+    			totalWritten += written;
+        	}
+        	resize(metaData.length + totalWritten);
+    		fs->openFilesMutex.unlock();
+    		//Debug::printf("unlocked mutex\n");
+        	return 0;
+        }
+
+        int32_t write(uint32_t offset, void* buf, uint32_t length) {
+        	fs->openFilesMutex.lock();
+        	if(offset > metaData.length) {
+        		return append(buf, length);
+        	}
+
+        	//choose smaller of two to actually write
+        	uint32_t actualOffset = offset + 8;
+        	uint32_t len = min(length, fs->dev->blockSize - actualOffset);
+
+        	uint32_t blockInFile = actualOffset / 512;
+        	uint32_t offsetInBlock = actualOffset % 512;
+
+        	uint32_t blockNumber = start;
+
+        	for(uint32_t i = 0; i<blockInFile; i++) {
+        		blockNumber = fs->fat[blockNumber];
+        	}
+
+        	int32_t count = fs->dev->write(blockNumber * 512 + offsetInBlock, buf, len);
+        	resize(metaData.length + count);
+        	fs->openFilesMutex.unlock();
+        	return count;
+        }
+
 };
 
 class Fat439File : public File {
@@ -117,52 +190,27 @@ class Fat439Directory : public Directory {
     Mutex mutex;
 public:
     Fat439Directory(Fat439* fs, uint32_t start) : Directory(fs), start(start) {
-        content = fs->openFile(start);
+        Debug::printf("in Fat439Directory constructor\n");
+    	content = fs->openFile(start);
         entries = content->getLength() / 16;        
-    }
-
-    void refresh() {
-    	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
-    	uint32_t blockSize = rootfs->dev->blockSize;
-        //Debug::printf("OpenFile metaData content length before = %d\n", content->metaData.length);
-    	rootfs->dev->read(start * blockSize, &content->metaData, sizeof(content->metaData));
-        //Debug::printf("OpenFile metaData content length after = %d\n", content->metaData.length);
-    	entries = content->getLength() / 16;
-    	//Debug::panic("asd\n");
-    }
-
-    void addEntry() {
-    	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
-    	uint32_t blockSize = rootfs->dev->blockSize;
-    	struct {
-    		uint32_t type;
-    		uint32_t length;
-    	} metaData;
-    	rootfs->dev->read(start * blockSize, &metaData, sizeof(metaData));
-    	//Debug::printf("metaData.length was = %d\n", metaData.length);
-    	metaData.type = TYPE_DIR;
-    	metaData.length += DIR_ENTRY_SZ;
-    	//Debug::printf("metaData.length now = %d\n", metaData.length);
-    	rootfs->dev->write(start * blockSize, &metaData, sizeof(metaData));
-
-    	refresh();
     }
 
 
     long mkdir(const char* name) {
 
-    	Debug::printf("in mkdir..\n");
+    	//Debug::printf("in mkdir..\n");
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
     	uint32_t blockSize = rootfs->dev->blockSize;
 
+    	if(start == rootfs->super.root && (content->getLength() + HEADER_SZ >= rootfs->dev->blockSize))
+    		return ERR_NO_ROOT_SPACE;
+
+    	//Debug::printf(" rem next avail..\n");
     	uint32_t blockToUse = rootfs->remNextAvail();
-    	if(!blockToUse) {
-    		Debug::printf("no avail blocks\n");
+    	if(!blockToUse)
     		return ERR_NO_SPACE;
-    	}
     	else {
-    	    Debug::printf("making new directory\n");
-    		struct {
+    	    struct {
     	        uint32_t type;
     	        uint32_t length;
     	    } metaData;
@@ -171,42 +219,15 @@ public:
     	    rootfs->dev->write(blockToUse * blockSize, &metaData, sizeof(metaData));
     	}
 
-
-
+    	//Debug::printf("finished setting up new directory\n");
     	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR)
     		return ERR_NOT_DIR;
 
-    	Debug::printf("    parentDir is a Directory\n");
-
-    	mutex.lock();
-    	uint32_t offsetInBlk = ((Fat439Directory*)this)->content->getLength() + HEADER_SZ;
-    	uint32_t prevBlk = 0;
-    	uint32_t blkToGet = start;
-    	Debug::printf("    Seeking...\n");
-    	Debug::printf("        offsetInBlk = %d\n "
-    			"        prevBlk = %d\n "
-    			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);
-    	while(offsetInBlk >= FileSystem::rootfs->dev->blockSize && blkToGet != 0) {
-    		offsetInBlk -= FileSystem::rootfs->dev->blockSize;
-    		prevBlk = blkToGet;
-    		blkToGet = rootfs->nextBlk(blkToGet);
-        	Debug::printf("        offsetInBlk = %d\n "
-        			"        prevBlk = %d\n "
-        			"        blkToGet = %d\n", offsetInBlk, prevBlk, blkToGet);
-    	} if(blkToGet == 0) {
-    		Debug::printf(" Reached end of directory, need to find a new place...\n");
-    		uint32_t newBlk = rootfs->remNextAvail();
-    		rootfs->setNextBlk(prevBlk, newBlk);
-    		blkToGet = newBlk;
-    	}
-    		Debug::printf(" now blkToGet = %d\n", blkToGet);
 
     	struct{
     		char name[12];
     		uint32_t start;
     	}entry;
-    	memset(&entry, 0, 12);
-
     	uint32_t ni = 0;
     	while(name[ni] != 0 && ni < 12) {
     		entry.name[ni] = name[ni];
@@ -214,40 +235,12 @@ public:
     	} if(ni < 12) entry.name[ni] = 0;
     	entry.start = blockToUse;
 
-    	char* buf = new char[16];
-    	memcpy(buf, &entry, 16);
-    	Debug::printf("    entry.name = %s\n    entry.start = %d \n", entry.name, entry.start);
-    	Debug::printf("    ");
-    	uint32_t amWritten = rootfs->dev->write(blkToGet * blockSize + offsetInBlk, buf, sizeof(entry));
-    	Debug::printf("             amWritten = %d\n", amWritten);
-    	if(amWritten < sizeof(entry)) {
-    		Debug::printf("    need to write in a new block... \n");
-    		prevBlk = blkToGet;
-    		blkToGet = rootfs->remNextAvail();
-    		if(!blkToGet)
-    			return ERR_NO_SPACE;
-    		rootfs->setNextBlk(prevBlk, blkToGet);
-    		Debug::printf("    Writing at block %d %d more bytes\n", blkToGet, sizeof(entry) - amWritten);
-    		Debug::printf("       addr of entry = %d and incremented address is %d\n", &entry, (uint32_t)&entry + amWritten);
-
-    		rootfs->dev->write(blkToGet * blockSize,
-    				(void*)((uint32_t)&buf + amWritten),
-    				sizeof(entry) - amWritten);
-    	delete buf;
+    	//Debug::printf(" about to append\n");
+    	uint32_t success = content->append(&entry, sizeof(entry));
+    	if(success != 0) {
+    		return ERR_DEVWRITE;
     	}
-
-    	/*Debug::printf("    double checking the name and stuff were copied correctly...\n");
-    	entry.name[0] = 'T';
-    	entry.name[1] = 'F';
-    	entry.start = 0;
-    	rootfs->dev->read(blkToGet * blockSize + offsetInBlk, &entry, sizeof(entry));
-    	Debug::printf("        entry.name = %s\n"
-    			      "        entry.start = %d\n", entry.name, entry.start);
-
-    	Debug::printf("    done\n");*/
-
-    	addEntry();
-    	mutex.unlock();
+    	entries += 1;
     	return 0;
     }
 
