@@ -9,6 +9,7 @@
 #include <libgen.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#define HEADER_SZ (16)
 
 typedef struct {
     char magic[4];
@@ -55,9 +56,12 @@ uint32_t oneFile(const char* fileName) {
     fileMetaData[0] = 1;
 
     uint32_t currentBlock = startBlock;
-    uint32_t leftInBlock = 512 - 8;
-    uint32_t blockOffset = 8;
+    uint32_t leftInBlock = 512 - HEADER_SZ;
+    uint32_t blockOffset = HEADER_SZ;
     uint32_t totalSize = 0;
+
+    fileMetaData[2] = 1023;
+    fileMetaData[3] = startBlock;
 
     while (1) {
         if (leftInBlock == 0) {
@@ -140,12 +144,14 @@ int main(int argc, const char *argv[]) {
         fat[i] = i-1;
     }
 
-    /* root direcotry */
+    /* root directory */
     super->root = getBlock();
     uint32_t *rootMetaData = (uint32_t*) toPtr(super->root,0);
     rootMetaData[0] = 2;
     rootMetaData[1] = nFiles * 16;
-    char* rootData = toPtr(super->root,8);
+    rootMetaData[2] = 0;
+    rootMetaData[3] = super->root;
+    char* rootData = toPtr(super->root, HEADER_SZ);
 
     /* iterate over files */
     for (int i=0; i<nFiles; i++) {

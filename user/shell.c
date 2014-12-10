@@ -4,26 +4,6 @@
 #define NUM_PROGS (6)
 #define MAX_PROG_SZ (12)
 
-
-void pwd() {
-	puts("/");
-	dir* thisDir = root;
-	if(thisDir) {
-		char* directory = thisDir->currDir;
-		if(directory[0] != 0)
-			puts(directory);
-
-
-		while(thisDir->nextDir != 0) {
-			thisDir = (dir*)thisDir->nextDir;
-			directory = thisDir->currDir;
-			if(directory)
-				puts(directory);
-			if(directory) puts("/");
-		}
-	}
-}
-
 void notFound(char* cmd) {
     puts(cmd);
     puts(": command not found\n");
@@ -42,12 +22,11 @@ void notFound(char* cmd) {
 long checkProg(char* prog) {
 	//long i = 0;
 
-	if(prog[0] == 'p' && prog[1] == 'w' && prog[2] == 'd' && prog[3] == 0) {
-		pwd();
+/*	if(prog[0] == 'p' && prog[1] == 'w' && prog[2] == 'd' && prog[3] == 0) {
 		putchar('\n');
 		return -3;
-	}
-	else if(prog[0] == 'c' && prog[1] == 'd' && prog[2] == 0) {
+	}*/
+	if(prog[0] == 'c' && prog[1] == 'd' && prog[2] == 0) {
 		return -4;
 	}
 	long fd = open(prog);
@@ -76,18 +55,9 @@ long checkProg(char* prog) {
 }
 
 int main() {
-
-	root = malloc(sizeof(dir));
-	root->prevDir = 0;
-	root->nextDir = 0;
-	//root is char* = 0;
-
-	currDir = root;
-
-
 	while (1) {
         puts("shell:");
-        pwd();
+        //pwd();
         puts("$ ");
         char* in = gets();
     	long idx = 0;
@@ -98,20 +68,22 @@ int main() {
     	while(in[idx] != ' ' && in[idx] != '\r' && in[idx] != 0) prog[progIdx++] = in[idx++];
     	long numArgs = checkProg(prog);
     	char** args = 0;
-    	if(numArgs == -4) {
+		if(numArgs == -4) {
 			while(in[idx] != 0 && in[idx] != '\r' && in[idx] == ' ') ++idx;
 			args = delimitBy((char*)&in[idx], '/');
-			changeDir(args);
-    	}
-    	else if(numArgs == -1) {
+			long result = cd(args);
+			if(result == ERR_NOT_FOUND) puts("Error: directory not found.\n");
+			goto done;
+		}
+		else if(numArgs == -1) {
     		if(prog[0] != 0)
     			notFound(prog);
-    		free(prog);
+    		goto done;
     	}
     	else if(numArgs == -3) {
-    		free(prog);
+    		goto done;
     	} else {
-			args = delimitBy((char*)&in[idx], ' ');
+    		args = delimitBy((char*)&in[idx], ' ');
 			long id = fork();
 			if(id == 0) {
 				execv(prog, args);
@@ -129,6 +101,7 @@ int main() {
 			}
 		//freeing args & prog
 		if(args) free(args);
+done:
 		if(prog) free(prog);
         if (in) free(in);
     }

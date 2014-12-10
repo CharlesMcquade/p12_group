@@ -71,7 +71,6 @@ extern "C" void runProcess() {
 Process::Process(const char* name, Table *resources_) : 
     Resource(ResourceType::PROCESS), name(name), resources(resources_)
 {
-    //Debug::printf("Process::Process %p",this);
     id = nextId.getThenAdd(1);
     iDepth = 0;
     iCount = 0;
@@ -164,7 +163,6 @@ long Process::execv(const char* fileName, SimpleQueue<const char*> *args, long a
     stack[1] = (long)&argv[0];
 
 
-
   
     /* clear resources */
     resources->closeAll();
@@ -176,9 +174,8 @@ long Process::execv(const char* fileName, SimpleQueue<const char*> *args, long a
     prog->readFully(&hdr,sizeof(Elf32_Ehdr));
 
     uint32_t hoff = hdr.e_phoff;
-
     for (uint32_t i=0; i<hdr.e_phnum; i++) {
-        Elf32_Phdr phdr;
+    	Elf32_Phdr phdr;
         prog->seek(hoff);
         prog->readFully(&phdr,sizeof(Elf32_Phdr));
         hoff += hdr.e_phentsize;
@@ -193,7 +190,6 @@ long Process::execv(const char* fileName, SimpleQueue<const char*> *args, long a
         }
     }
 
-;
     switchToUser(hdr.e_entry, userESP,0);
 
     Debug::shutdown("What?");
@@ -264,6 +260,7 @@ void Process::exit(long exitCode) {
     if (p) {
         p->exitCode = exitCode;
         p->resources->closeAll();
+        p->resources->closeWorkingDir();
         p->onExit();
         p->doneEvent.signal();
         

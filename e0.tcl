@@ -12,29 +12,37 @@ expect_after {
 
 spawn qemu-system-x86_64 -nographic --serial mon:stdio -hdc kernel/kernel.img -hdd fat439/user.img
 
-expect "shell:/$ "
+expect "shell:$ "
 send "ls\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "mkdir DIR1\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "mkdir DIR2\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "mkdir DIR3\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "mkdir DIR4\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "cd DIR4\r"
 
-expect "shell:/DIR4/$ "
+expect "shell:$ "
+send "mkdir foo\r"
+
+expect "shell:$ "
+send "ls\r"
+
+expect "shell:$ "
 send "cd ../\r"
 
+expect "shell:$ "
+send "ls\r"
 
-expect "shell:/$ "
+expect "shell:$ "
 send "shutdown\r"
 
 expect "*** System Shutdown ***\r"

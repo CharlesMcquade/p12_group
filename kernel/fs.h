@@ -1,7 +1,8 @@
 #ifndef _FS_H_
 #define _FS_H_
 
-#define HEADER_SZ (8)
+#define BLOCK_SZ (512)
+#define HEADER_SZ (16)
 #define DIR_ENTRY_SZ (16)
 #define TYPE_DIR (2)
 #define TYPE_FILE (1)
@@ -68,15 +69,24 @@ public:
 };
 
 /* A directory */
-class Directory {
+class Directory : public Resource {
 public:
     FileSystem* fs;
-    Directory(FileSystem *fs) : fs(fs){}
+    Directory(FileSystem *fs) : Resource(ResourceType::DIRECTORY), fs(fs) {}
     //mkdir will need a mutex on the FAT.
     virtual long mkdir(const char* name) = 0;
     virtual File* lookupFile(const char* name) = 0;
     virtual Directory* lookupDirectory(const char *name) = 0;
-    virtual Directory* lookupDirectory(const char** path) = 0;
+    virtual Directory* lookupDirectory(const char** path) {
+    	long n = 0;
+    	Directory* curr = this;
+    	if(path)
+    		while(path[n]) {
+    			curr = curr->lookupDirectory(path[n]);
+    			if(!curr) return 0;
+    		}
+    	return curr;
+    }
     virtual void listFiles() = 0;
 
 };

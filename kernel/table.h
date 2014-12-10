@@ -9,6 +9,8 @@ public:
     Table(long n);
     virtual ~Table();
 
+    long addWorkingDir(Resource* p);
+    long closeWorkingDir();
     long open(Resource* p);
     long close(long i);
     void closeAll();

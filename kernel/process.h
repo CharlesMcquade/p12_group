@@ -9,13 +9,16 @@
 #include "vmm.h"
 #include "resource.h"
 #include "table.h"
+#include "fs.h"
+
 
 class Timer;
 
 class Process : public Resource {
 
 public:
-	Directory* workingDir;
+
+	SimpleQueue<char*> workingDir;
 
 	// kernel stack size in longs
     static size_t STACK_LONGS;

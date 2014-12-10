@@ -8,6 +8,7 @@ enum ResourceType {
     PROCESS,
     SEMAPHORE,
     FILE,
+    DIRECTORY,
     TABLE,
     OTHER
 };
@@ -22,9 +23,9 @@ public:
     }
     static Resource* unref(Resource* p) {
         if (p) {
-            uint32_t old = p->count.getThenAdd(-1);
+        	uint32_t old = p->count.getThenAdd(-1);
             if (old == 1) {
-                delete p;
+            	delete p;
                 return nullptr;
             }
         }

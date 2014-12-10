@@ -14,6 +14,7 @@
 #define ERR_FL_NAMELEN (-1010)
 #define ERR_FL_EXIST (-1011)
 #define ERR_INVL_CHAR (-1012)
+#define ERR_CLOSE_WD (-1013)
 
 
 #endif

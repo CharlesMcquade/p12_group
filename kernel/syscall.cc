@@ -73,9 +73,21 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
         }
     case 8 : /* open */
         {
-            File* f = FileSystem::rootfs->rootdir->lookupFile((char*) a0);
-            if (f == nullptr) return ERR_NOT_FOUND;
-            else return Process::current->resources->open(f);
+
+        	/*Debug::printf("here.\n");
+        	Debug::printf("FileSystem::rootfs = %d   --- FileSystem::rootfs->rootdir = %d \n", FileSystem::rootfs, FileSystem::rootfs->rootdir);
+        	Debug::printf("a0 = %s\n", a0);*/
+        	File* f = FileSystem::rootfs->rootdir->lookupFile((char*)a0);
+        	if (f == nullptr) {
+        		f = ((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY))->lookupFile(((char*) a0));
+        		if (f == nullptr)
+        			return ERR_NOT_FOUND;
+        		else {
+        			return Process::current->resources->open(f);
+        		}
+        	} else {
+        		return Process::current->resources->open(f);
+        	}
         }
     case 9 : /* getlen */
         {
@@ -143,7 +155,7 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
         }
     case 15: /*ls*/
     {
-    	FileSystem::rootfs->rootdir->listFiles();
+    	((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY))->listFiles();
     	return 0;
     }
 
@@ -153,16 +165,28 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
     {
     	const char* fileName =  (const char*)a0;
     	const char** filePath = (const char**)a1;
-    	Directory* dir = FileSystem::rootfs->rootdir;
-    	//Debug::printf("here : %s:%d  -- checking file path\n ",__FILE__,__LINE__);
+    	Directory* dir = ((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY));
     	if(filePath[0]) {
-        	//Debug::printf("here : %s:%d  -- filePath[0] = %s\n",__FILE__,__LINE__, filePath[0]);
-    		dir = (FileSystem::rootfs->rootdir)->lookupDirectory(filePath);
+    		dir = ((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY))->lookupDirectory(filePath);
     	if(!dir)
     		return ERR_NOT_FOUND;
     	}
     	//Debug::printf("here : %s:%d   --- about to return\n",__FILE__,__LINE__);
     	return dir->mkdir(fileName);
+    }
+
+    case 17 : /* char** cd(char** filePath)*/
+    {
+    	const char** filePath = (const char**)a0;
+    	if(filePath) {
+    		Directory* dir = ((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY))->lookupDirectory(filePath);
+    		if(!dir)
+    			return ERR_NOT_FOUND;
+    		else
+    			Process::current->resources->addWorkingDir(dir);
+		}
+
+    	return 0;
     }
     default:
         Process::trace("syscall(%d,%d,%d)",num,a0,a1);

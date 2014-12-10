@@ -1,6 +1,8 @@
-9a10
-> in Fat439Directory constructor
-28,74c29,38
+12c12
+< shell:/$ ls
+---
+> shell:$ ls
+28,76c28,57
 < shell:/$ echo This is cool
 < This is cool
 < shell:/$     echo    I know    how  to         handle  spaces   
@@ -48,16 +50,36 @@
 < gcc: command not found
 < shell:/$ cat notThere
 < cat: notThere: No such file or directory
----
-> shell:/$ mkdir DIR1
-> resizing
-> shell:/$ mkdir DIR2
-> resizing
-> shell:/$ mkdir DIR3
-> resizing
-> shell:/$ mkdir DIR4
-> resizing
-> shell:/$ cd DIR4
-> shell:/DIR4/$ cd ../
-76d39
+< shell:/$ shutdown
 < 
+---
+> shell:$ mkdir DIR1
+> shell:$ mkdir DIR2
+> shell:$ mkdir DIR3
+> shell:$ mkdir DIR4
+> shell:$ cd DIR4
+> shell:$ mkdir foo
+> shell:$ ls
+> foo
+> shell:$ cd ../
+> shell:$ ls
+> mkdir.c
+> mkdir
+> shutdown
+> shutdown.c
+> shell.c
+> shell
+> ls.c
+> ls
+> echo
+> echo.c
+> cat.c
+> cat
+> f1.txt
+> f2.txt
+> panic
+> DIR1
+> DIR2
+> DIR3
+> DIR4
+> shell:$ shutdown

@@ -176,3 +176,14 @@ mkdir:
 	int $100
 	ret
 
+	# char** cd(char** filePath)
+	.global cd
+cd:
+	mov $17, %eax
+	mov 4(%esp), %ecx
+	mov $0, %edx
+	int $100
+	ret
+
+
+

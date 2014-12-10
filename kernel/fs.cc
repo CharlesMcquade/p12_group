@@ -30,18 +30,22 @@ public:
     struct {
         uint32_t type;
         uint32_t length;
+        uint32_t parentDir;
+        uint32_t currentBlk;
     } metaData;
     Fat439 *fs;
 
     OpenFile(Fat439 *fs, uint32_t start) : Resource(ResourceType::OTHER) {
         this->start = start;
         this->fs = fs;
-        fs->dev->readFully(start * 512, &metaData, sizeof(metaData));
+        fs->dev->readFully(start * BLOCK_SZ, &metaData, sizeof(metaData));
     }
 
     virtual ~OpenFile() {
     }
 
+    uint32_t getParentBlk() { return metaData.parentDir; }
+    uint32_t getCurrBlk() { return metaData.currentBlk; }
     uint32_t getLength() { return  metaData.length; }
     uint32_t getType() { return metaData.type; }
 
@@ -51,9 +55,9 @@ public:
         }
         uint32_t len = min(length,metaData.length - offset);
 
-        uint32_t actualOffset = offset + 8;
-        uint32_t blockInFile = actualOffset / 512;
-        uint32_t offsetInBlock = actualOffset % 512;
+        uint32_t actualOffset = offset + HEADER_SZ;
+        uint32_t blockInFile = actualOffset / BLOCK_SZ;
+        uint32_t offsetInBlock = actualOffset % BLOCK_SZ;
         /*Debug::printf("actualOffset = %d\n blockInFile = %d\n offsetInBlock = %d\n",
         		actualOffset, blockInFile, offsetInBlock);*/
 
@@ -63,7 +67,7 @@ public:
             blockNumber = fs->fat[blockNumber];
         }
 
-        int32_t count = fs->dev->read(blockNumber * 512 + offsetInBlock, buf, len);
+        int32_t count = fs->dev->read(blockNumber * BLOCK_SZ + offsetInBlock, buf, len);
         return count;
     }
 
@@ -81,18 +85,17 @@ public:
     }
 
     void resize(uint32_t newsz) {
-    	Debug::printf("resizing\n");
     	metaData.length = newsz;
-    	fs->dev->write(start * 512, &metaData, sizeof(metaData));
+    	fs->dev->write(start * BLOCK_SZ, &metaData, sizeof(metaData));
     }
 
     int32_t append(void* buf, uint32_t length) {
         	fs->openFilesMutex.lock();
         	//Debug::printf("in mutex lock\n");
-        	uint32_t actualOffset = metaData.length + 8;
+        	uint32_t actualOffset = metaData.length + HEADER_SZ;
         	uint32_t len = min(length, fs->dev->blockSize - actualOffset);
-        	uint32_t blockInFile = actualOffset / 512;
-        	uint32_t offsetInBlock = actualOffset % 512;
+        	uint32_t blockInFile = actualOffset / BLOCK_SZ;
+        	uint32_t offsetInBlock = actualOffset % BLOCK_SZ;
 
         	uint32_t blockNumber = start;
 
@@ -107,7 +110,6 @@ public:
         	length -= written;
         	//if length != 0, need to go into a new block
         	while(length > 0) {
-    			Debug::printf("writing again\n");
         		uint32_t nextBlk = fs->remNextAvail();
     			if(!nextBlk) { //resize and return amount written if no more space
     				resize(metaData.length + totalWritten);
@@ -135,11 +137,11 @@ public:
         	}
 
         	//choose smaller of two to actually write
-        	uint32_t actualOffset = offset + 8;
+        	uint32_t actualOffset = offset + HEADER_SZ;
         	uint32_t len = min(length, fs->dev->blockSize - actualOffset);
 
-        	uint32_t blockInFile = actualOffset / 512;
-        	uint32_t offsetInBlock = actualOffset % 512;
+        	uint32_t blockInFile = actualOffset / BLOCK_SZ;
+        	uint32_t offsetInBlock = actualOffset % BLOCK_SZ;
 
         	uint32_t blockNumber = start;
 
@@ -147,7 +149,7 @@ public:
         		blockNumber = fs->fat[blockNumber];
         	}
 
-        	int32_t count = fs->dev->write(blockNumber * 512 + offsetInBlock, buf, len);
+        	int32_t count = fs->dev->write(blockNumber * BLOCK_SZ + offsetInBlock, buf, len);
         	resize(metaData.length + count);
         	fs->openFilesMutex.unlock();
         	return count;
@@ -191,29 +193,32 @@ class Fat439Directory : public Directory {
     Mutex mutex;
 public:
     Fat439Directory(Fat439* fs, uint32_t start) : Directory(fs), start(start) {
-        Debug::printf("in Fat439Directory constructor\n");
     	content = fs->openFile(start);
-        entries = content->getLength() / 16;        
+        entries = content->getLength() / DIR_ENTRY_SZ;
     }
 
+    Directory* getPrevDirectory() {
+    	uint32_t idx = 0;
+    	fs->dev->read(start + 2*sizeof(uint32_t), &idx, sizeof(uint32_t));
+    	if(idx == 0)
+    		return this;
+    	return new Fat439Directory((Fat439*)fs, idx);
+    }
 
     long mkdir(const char* name) {
 
-    	if(K::strlen(name) >= 12)
-    		return ERR_FL_NAMELEN;
-    	if(K::contains(name, '/'))
-    		return ERR_INVL_CHAR;
-    	if(lookup(name))
-    		return ERR_FL_EXIST;
-    	//Debug::printf("in mkdir..\n");
+    	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR) return ERR_NOT_DIR;
+    	if(K::strlen(name) >= 12) return ERR_FL_NAMELEN;
+    	if(K::contains(name, '/')) return ERR_INVL_CHAR;
+    	if(lookup(name))return ERR_FL_EXIST;
+
+
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
     	uint32_t blockSize = rootfs->dev->blockSize;
 
     	if(start == rootfs->super.root && (content->getLength() + HEADER_SZ + DIR_ENTRY_SZ >= rootfs->dev->blockSize))
     		return ERR_NO_ROOT_SPACE;
 
-
-    	//Debug::printf(" rem next avail..\n");
     	uint32_t blockToUse = rootfs->remNextAvail();
     	if(!blockToUse)
     		return ERR_NO_SPACE;
@@ -233,11 +238,6 @@ public:
     	    rootfs->dev->write(blockToUse * blockSize, &metaData, sizeof(metaData));
     	}
 
-    	//Debug::printf("finished setting up new directory\n");
-    	if(((Fat439Directory*)this)->content->getType() != TYPE_DIR)
-    		return ERR_NOT_DIR;
-
-
     	struct{
     		char name[12];
     		uint32_t start;
@@ -250,7 +250,6 @@ public:
     	} if(ni < 12) entry.name[ni] = 0;
     	entry.start = blockToUse;
 
-    	//Debug::printf(" about to append\n");
     	uint32_t success = content->append(&entry, sizeof(entry));
     	if(success != 0) {
     		return ERR_DEVWRITE;
@@ -263,6 +262,8 @@ public:
         if ((name[0] == '.') && (name[1] == 0)) {
             return start;
         }
+        if( name[0] == '.' && name[1] == '.' && name [2] == 0)
+        	return content->getParentBlk();
         struct {
             char name[12];
             uint32_t start;
@@ -270,8 +271,8 @@ public:
         mutex.lock();
         uint32_t offset = 0;
         for (uint32_t i=0; i<entries; i++) {
-            content->readFully(offset,&entry, 16);
-            offset += 16;
+            content->readFully(offset,&entry, DIR_ENTRY_SZ);
+            offset += DIR_ENTRY_SZ;
             for (int i=0; i<12; i++) {
                 char x = entry.name[i];
                 if (x != name[i]) break;
@@ -293,22 +294,24 @@ public:
 		mutex.lock();
 		uint32_t offset = 0;
 		for (uint32_t i=0; i<entries; i++) {
-			content->readFully(offset,&entry, 16);
-			offset += 16;
+			content->readFully(offset,&entry, DIR_ENTRY_SZ);
+			offset += DIR_ENTRY_SZ;
 			Debug::printf("%s\n", entry.name);
 		}
 		mutex.unlock();
     }
 
     File* lookupFile(const char* name) {
-        uint32_t idx = lookup(name);
+    	if(!name) return nullptr;
+    	uint32_t idx = lookup(name);
         if (idx == 0) return nullptr;
 
         return new Fat439File(content->fs->openFile(idx));
     }
 
     Directory* lookupDirectory(const char* name) {
-        uint32_t idx = lookup(name);
+        if(!name) return nullptr;
+		uint32_t idx = lookup(name);
         if (idx == 0) return nullptr;
 
         return new Fat439Directory(content->fs,idx);
@@ -316,12 +319,14 @@ public:
 
     Directory* lookupDirectory(const char** path) {
     	uint32_t pathNum = 0;
-    	uint32_t idx;
-    	do {
-    		idx = lookup(path[pathNum]);
-    		if(idx) ++pathNum;
-    	} while((long)path[pathNum] && idx > 0);
-    	if(idx)
+    	uint32_t idx = 0;
+    	if(path)
+    		if(path[pathNum])
+				do {
+					idx = lookup(path[pathNum]);
+					if(idx) ++pathNum;
+				} while((long)path[pathNum] && idx > 0);
+			if(idx)
     		return new Fat439Directory(content->fs, idx);
     	return nullptr;
     }
@@ -338,7 +343,7 @@ Fat439::Fat439(BlockDevice *dev) : FileSystem(dev) {
 
     fat = new uint32_t[super.nBlocks];
     openFiles = new OpenFilePtr[super.nBlocks]();
-    dev->readFully(512,fat,super.nBlocks * sizeof(uint32_t));
+    dev->readFully(BLOCK_SZ,fat,super.nBlocks * sizeof(uint32_t));
     rootdir = new Fat439Directory(this,super.root);
 }
 

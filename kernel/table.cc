@@ -16,10 +16,35 @@ Table::~Table() {
     array = nullptr;
 }
 
+long Table::addWorkingDir(Resource* p) {
+	mutex.lock();
+	if(p->type != ResourceType::DIRECTORY) {
+		mutex.unlock();
+		return ERR_NOT_DIR;
+	}
+	if(array[1] != nullptr)
+		Resource::unref(array[1]);
+	array[1] = Resource::ref(p);
+	mutex.unlock();
+	return 0;
+}
+
+long Table::closeWorkingDir() {
+	mutex.lock();
+		if(array[1]->type != ResourceType::DIRECTORY) {
+			mutex.unlock();
+			return ERR_NOT_DIR;
+		}
+		Resource::unref(array[1]);
+		array[1] = nullptr;
+		mutex.unlock();
+	return 0;
+}
+
 long Table::open(Resource* p) {
     long i;
     mutex.lock();
-    for (i=1; i<n; i++) {
+    for (i=2; i<n; i++) {
         if (array[i] == nullptr) {
             array[i] = Resource::ref(p);
             goto done;
@@ -34,6 +59,7 @@ done:
 long Table::close(long i) {
     if (i < 0) return ERR_INVALID_ID;
     if (i >= n) return ERR_INVALID_ID;
+    if (i == 1) return ERR_CLOSE_WD;
     mutex.lock();
     Resource* old = array[i];
     Resource::unref(old);
@@ -44,7 +70,7 @@ long Table::close(long i) {
 
 void Table::closeAll() {
     mutex.lock();
-    for (int i=0; i<n; i++) {
+    for (int i=2; i<n; i++) {
         Resource::unref(array[i]);
         array[i] = nullptr;
     }
