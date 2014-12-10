@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
 		case ERR_NOT_DIR : { puts(" Error: Is not a directory.\n"); break;}
 		case ERR_FL_NAMELEN : { puts("Error: File name is too long.\n"); break;}
 		case ERR_FL_EXIST : { puts("Error: Directory with that name already exists.\n"); break;}
+		case ERR_INVL_CHAR : { puts("Error: Directory name cannot contain '/'\n"); break; }
 		default : { puts("Error: "); putdec(code); puts(" \n"); break; }
 		}
 	}

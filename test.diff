@@ -1,4 +1,63 @@
 9a10
 > in Fat439Directory constructor
-76d76
+28,74c29,38
+< shell:/$ echo This is cool
+< This is cool
+< shell:/$     echo    I know    how  to         handle  spaces   
+< I know how to handle spaces
+< shell:/$ cat f1.txt
+< This is f1
+< It contains text
+< shell:/$  f1.txt
+< This is f1
+< It contains text
+< shell:/$ cat f1.txt f2.txt
+< This is f1
+< It contains text
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< shell:/$ f2.txt f1.txt
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< shell:/$ cat f1.txt f2.txt f1.txt f2.txt
+< This is f1
+< It contains text
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< This is f1
+< It contains text
+< 0
+< 11
+< 222
+< 3333
+< 44444
+< 555555
+< shell:/$ gcc
+< gcc: command not found
+< shell:/$ cat notThere
+< cat: notThere: No such file or directory
+---
+> shell:/$ mkdir DIR1
+> resizing
+> shell:/$ mkdir DIR2
+> resizing
+> shell:/$ mkdir DIR3
+> resizing
+> shell:/$ mkdir DIR4
+> resizing
+> shell:/$ cd DIR4
+> shell:/DIR4/$ cd ../
+76d39
 < 

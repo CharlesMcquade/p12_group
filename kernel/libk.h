@@ -12,6 +12,7 @@ public:
     static void vsnprintf (OutputStream<char>& sink, long maxlen, const char *fmt, va_list arg);
     static long strlen(const char* str);
     static char* strdup(const char* str);
+    static int contains(const char* str, char item);
     static int isdigit(int c);
     template <typename T> static T&& move(T& x);
 };

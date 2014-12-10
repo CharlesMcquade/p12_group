@@ -5,75 +5,21 @@
 #define MAX_PROG_SZ (12)
 
 
-typedef struct
-{
-	struct dir* prevDir;
-	uint32_t start; //start block
-	char* currDir;
-	struct dir* nextDir;
-} dir;
-
-
-dir* root;
-dir* currDir;
-
-
-
-char** delimitBy(char* in, char delimiter) {
-	long idx = 0;
-	long numArgs = 1;
-	char** args = malloc(sizeof(char*) * numArgs);
-	memset(args, 0, sizeof(char*) * numArgs);
-	long argNum = 0;
-	char setArg = 0;
-	long argIdx = 0;
-	while((in[idx] != 0 && in[idx] != '\r')) {
-		if(in[idx] != delimiter) {
-			if(!setArg) {
-				if(argNum == numArgs) {
-					long newsz = numArgs + 2;
-					char** temp = malloc(sizeof(char*) * newsz);
-					memset(temp, 0, sizeof(char*) * newsz);
-					memcpy(temp, args, sizeof(char*) * numArgs);
-					numArgs = newsz;
-					free(args);
-					args = temp;
-				}
-				args[argNum] = malloc(sizeof(char) * MAX_PROG_SZ);
-				memset(args[argNum], 0, sizeof(char) * MAX_PROG_SZ);
-				setArg = 1;
-			}
-			args[argNum][argIdx++] = in[idx];
-		}
-		else {
-			if(setArg) {
-				setArg = 0;
-				argIdx = 0;
-				++argNum;
-			}
-		}
-		++idx;
-	}
-	return args;
-}
 void pwd() {
 	puts("/");
-	dir* thisDir = currDir;
-	while(thisDir->prevDir != 0)
-		thisDir = (dir*)thisDir->prevDir;
-
+	dir* thisDir = root;
 	if(thisDir) {
 		char* directory = thisDir->currDir;
-		if(directory)
+		if(directory[0] != 0)
 			puts(directory);
 
 
 		while(thisDir->nextDir != 0) {
-			if(directory) puts("/");
 			thisDir = (dir*)thisDir->nextDir;
 			directory = thisDir->currDir;
 			if(directory)
 				puts(directory);
+			if(directory) puts("/");
 		}
 	}
 }
@@ -129,58 +75,12 @@ long checkProg(char* prog) {
 	return -3;
 }
 
-void runProg(char* in) {
-	long idx = 0;
-	while(in[idx] == ' ') ++idx;
-	char* prog = malloc(sizeof(char) * MAX_PROG_SZ);
-	memset(prog, 0, 12);
-	long progIdx = 0;
-	while(in[idx] != ' ' && in[idx] != '\r' && in[idx] != 0) prog[progIdx++] = in[idx++];
-	long numArgs = checkProg(prog);
-	if(numArgs == -4) {
-		while(in[idx] != 0 && in[idx] != '\r') ++idx;
-		//if(in[idx] == '.');
-	}
-	else if(numArgs == -1) {
-		if(prog[0] != 0)
-			notFound(prog);
-		free(prog);
-		return;
-	}
-	else if(numArgs == -3) {
-		free(prog);
-		return;
-	}
-	else {
-		char** args = delimitBy((char*)&in[idx], ' ');
-		execv(prog, args);
-
-		uint32_t argNum = 0;
-		//freeing pointers inside
-		for(argNum = 0; argNum < numArgs; argNum++) {
-			if(args[argNum] != 0)
-				free(args[argNum]);
-			else break;
-		}
-		//freeing args & prog
-		free(args);
-		free(prog);
-		return;
-	}
-
-}
-
-
-
-
-
 int main() {
 
 	root = malloc(sizeof(dir));
 	root->prevDir = 0;
 	root->nextDir = 0;
 	//root is char* = 0;
-	root->currDir = 0;
 
 	currDir = root;
 
@@ -190,13 +90,46 @@ int main() {
         pwd();
         puts("$ ");
         char* in = gets();
-        long id = fork();
-        if(id == 0) {
-        	runProg(in);
-        	exit(0);
-        }
-        else
-        	join(id);
+    	long idx = 0;
+    	while(in[idx] == ' ') ++idx;
+    	char* prog = malloc(sizeof(char) * MAX_PROG_SZ);
+    	memset(prog, 0, 12);
+    	long progIdx = 0;
+    	while(in[idx] != ' ' && in[idx] != '\r' && in[idx] != 0) prog[progIdx++] = in[idx++];
+    	long numArgs = checkProg(prog);
+    	char** args = 0;
+    	if(numArgs == -4) {
+			while(in[idx] != 0 && in[idx] != '\r' && in[idx] == ' ') ++idx;
+			args = delimitBy((char*)&in[idx], '/');
+			changeDir(args);
+    	}
+    	else if(numArgs == -1) {
+    		if(prog[0] != 0)
+    			notFound(prog);
+    		free(prog);
+    	}
+    	else if(numArgs == -3) {
+    		free(prog);
+    	} else {
+			args = delimitBy((char*)&in[idx], ' ');
+			long id = fork();
+			if(id == 0) {
+				execv(prog, args);
+				exit(0);
+			}
+			else
+				join(id);
+		}
+    	uint32_t argNum = 0;
+    	if(args)
+			for(argNum = 0; argNum < numArgs; argNum++) {
+				if(args[argNum] != 0)
+					free(args[argNum]);
+				else break;
+			}
+		//freeing args & prog
+		if(args) free(args);
+		if(prog) free(prog);
         if (in) free(in);
     }
     return 0;

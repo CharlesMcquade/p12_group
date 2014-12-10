@@ -1,4 +1,6 @@
 
+#!/usr/bin/expect
+
 set timeout 10
 
 expect_after {
@@ -14,31 +16,23 @@ expect "shell:/$ "
 send "ls\r"
 
 expect "shell:/$ "
-send "echo This is cool\r"
+send "mkdir DIR1\r"
 
 expect "shell:/$ "
-send "    echo    I know    how  to         handle  spaces   \r"
+send "mkdir DIR2\r"
 
 expect "shell:/$ "
-send "cat f1.txt\r"
+send "mkdir DIR3\r"
 
 expect "shell:/$ "
-send " f1.txt\r"
+send "mkdir DIR4\r"
 
 expect "shell:/$ "
-send "cat f1.txt f2.txt\r"
+send "cd DIR4\r"
 
-expect "shell:/$ "
-send "f2.txt f1.txt\r"
+expect "shell:/DIR4/$ "
+send "cd ../\r"
 
-expect "shell:/$ "
-send "cat f1.txt f2.txt f1.txt f2.txt\r"
-
-expect "shell:/$ "
-send "gcc\r"
-
-expect "shell:/$ "
-send "cat notThere\r"
 
 expect "shell:/$ "
 send "shutdown\r"

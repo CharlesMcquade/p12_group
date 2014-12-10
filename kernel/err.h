@@ -13,6 +13,7 @@
 #define ERR_DEVWRITE (-1009)
 #define ERR_FL_NAMELEN (-1010)
 #define ERR_FL_EXIST (-1011)
+#define ERR_INVL_CHAR (-1012)
 
 
 #endif

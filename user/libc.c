@@ -9,6 +9,13 @@ void puts(char* p) {
     while ((c = *p++) != 0) putchar(c); 
 }
 
+long strlen(char* str) {
+	char c;
+	long len = 0;
+	while((c = *str++) != 0) len++;
+	return len;
+}
+
 char* gets() {
     long sz = 0;
     char *p = 0;
@@ -57,4 +64,44 @@ long readFully(long fd, void* buf, long length) {
         togo -= cnt;
     }
     return length;
+}
+
+
+
+char** delimitBy(char* in, char delimiter) {
+	long idx = 0;
+	long numArgs = 1;
+	char** args = malloc(sizeof(char*) * numArgs);
+	memset(args, 0, sizeof(char*) * numArgs);
+	long argNum = 0;
+	char setArg = 0;
+	long argIdx = 0;
+	while((in[idx] != 0 && in[idx] != '\r')) {
+		if(in[idx] != delimiter) {
+			if(!setArg) {
+				if(argNum == numArgs) {
+					long newsz = numArgs + 2;
+					char** temp = malloc(sizeof(char*) * newsz);
+					memset(temp, 0, sizeof(char*) * newsz);
+					memcpy(temp, args, sizeof(char*) * numArgs);
+					numArgs = newsz;
+					free(args);
+					args = temp;
+				}
+				args[argNum] = malloc(sizeof(char) * 12);
+				memset(args[argNum], 0, sizeof(char) * 12);
+				setArg = 1;
+			}
+			args[argNum][argIdx++] = in[idx];
+		}
+		else {
+			if(setArg) {
+				setArg = 0;
+				argIdx = 0;
+				++argNum;
+			}
+		}
+		++idx;
+	}
+	return args;
 }

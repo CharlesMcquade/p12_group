@@ -201,6 +201,8 @@ public:
 
     	if(K::strlen(name) >= 12)
     		return ERR_FL_NAMELEN;
+    	if(K::contains(name, '/'))
+    		return ERR_INVL_CHAR;
     	if(lookup(name))
     		return ERR_FL_EXIST;
     	//Debug::printf("in mkdir..\n");
@@ -219,9 +221,15 @@ public:
     	    struct {
     	        uint32_t type;
     	        uint32_t length;
+    	        uint32_t parentDir;
+    	        uint32_t currentDir;
     	    } metaData;
+
+
 		    metaData.type = TYPE_DIR;
 		    metaData.length = 0;
+		    metaData.parentDir = this->start;
+		    metaData.currentDir = blockToUse;
     	    rootfs->dev->write(blockToUse * blockSize, &metaData, sizeof(metaData));
     	}
 
@@ -234,6 +242,7 @@ public:
     		char name[12];
     		uint32_t start;
     	}entry;
+
     	uint32_t ni = 0;
     	while(name[ni] != 0 && ni < 12) {
     		entry.name[ni] = name[ni];

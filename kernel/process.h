@@ -15,7 +15,9 @@ class Timer;
 class Process : public Resource {
 
 public:
-    // kernel stack size in longs
+	Directory* workingDir;
+
+	// kernel stack size in longs
     static size_t STACK_LONGS;
 
     // the ready queue

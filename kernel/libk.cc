@@ -13,6 +13,14 @@ long K::strlen(const char* str) {
     return n;
 }
 
+int K::contains(const char* str, char item) {
+	long n = 0;
+	while(str[n] != 0 && str[n] != item) n++;
+	if(str[n] == item)
+		return 1;
+	return 0;
+}
+
 //null terminate a string, return a new pointer to that string
 char* K::strdup(const char* str) {
     if (str == nullptr) return nullptr;
