@@ -19,8 +19,42 @@ dir* currDir;
 
 
 
-char** delimitBy(char* str, char delimiter) {
-
+char** delimitBy(char* in, char delimiter) {
+	long idx = 0;
+	long numArgs = 1;
+	char** args = malloc(sizeof(char*) * numArgs);
+	memset(args, 0, sizeof(char*) * numArgs);
+	long argNum = 0;
+	char setArg = 0;
+	long argIdx = 0;
+	while((in[idx] != 0 && in[idx] != '\r')) {
+		if(in[idx] != delimiter) {
+			if(!setArg) {
+				if(argNum == numArgs) {
+					long newsz = numArgs + 2;
+					char** temp = malloc(sizeof(char*) * newsz);
+					memset(temp, 0, sizeof(char*) * newsz);
+					memcpy(temp, args, sizeof(char*) * numArgs);
+					numArgs = newsz;
+					free(args);
+					args = temp;
+				}
+				args[argNum] = malloc(sizeof(char) * MAX_PROG_SZ);
+				memset(args[argNum], 0, sizeof(char) * MAX_PROG_SZ);
+				setArg = 1;
+			}
+			args[argNum][argIdx++] = in[idx];
+		}
+		else {
+			if(setArg) {
+				setArg = 0;
+				argIdx = 0;
+				++argNum;
+			}
+		}
+		++idx;
+	}
+	return args;
 }
 void pwd() {
 	puts("/");
@@ -67,7 +101,7 @@ long checkProg(char* prog) {
 		putchar('\n');
 		return -3;
 	}
-	else if(prog[0] == 'c' && prog[1] == 'd' == prog[2] == 0) {
+	else if(prog[0] == 'c' && prog[1] == 'd' && prog[2] == 0) {
 		return -4;
 	}
 	long fd = open(prog);
@@ -105,7 +139,7 @@ void runProg(char* in) {
 	long numArgs = checkProg(prog);
 	if(numArgs == -4) {
 		while(in[idx] != 0 && in[idx] != '\r') ++idx;
-		if(in[idx] == '.')
+		//if(in[idx] == '.');
 	}
 	else if(numArgs == -1) {
 		if(prog[0] != 0)
@@ -118,51 +152,15 @@ void runProg(char* in) {
 		return;
 	}
 	else {
-		long varArg = 0;
-		if(numArgs == -2) {
-			numArgs = 1;
-			varArg = 1;
-		}
-		char** args = malloc(sizeof(char*) * numArgs);
-		memset(args, 0, sizeof(char*) * numArgs);
-		long argNum = 0;
-		char setArg = 0;
-		long argIdx = 0;
-		while((in[idx] != 0 && in[idx] != '\r')) {
-			if(in[idx] != ' ') {
-				if(!setArg) {
-					if(argNum == numArgs) {
-						if(!varArg)
-							break;
-						long newsz = numArgs + 2;
-						char** temp = malloc(sizeof(char*) * newsz);
-						memset(temp, 0, sizeof(char*) * newsz);
-						memcpy(temp, args, sizeof(char*) * numArgs);
-						numArgs = newsz;
-						free(args);
-						args = temp;
-					}
-					args[argNum] = malloc(sizeof(char) * MAX_PROG_SZ);
-					memset(args[argNum], 0, sizeof(char) * MAX_PROG_SZ);
-					setArg = 1;
-				}
-				args[argNum][argIdx++] = in[idx];
-			}
-			else {
-				if(setArg) {
-					setArg = 0;
-					argIdx = 0;
-					++argNum;
-				}
-			}
-			++idx;
-		}
+		char** args = delimitBy((char*)&in[idx], ' ');
 		execv(prog, args);
 
+		uint32_t argNum = 0;
 		//freeing pointers inside
 		for(argNum = 0; argNum < numArgs; argNum++) {
 			if(args[argNum] != 0)
 				free(args[argNum]);
+			else break;
 		}
 		//freeing args & prog
 		free(args);
