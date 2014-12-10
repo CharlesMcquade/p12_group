@@ -3,6 +3,7 @@
 #include "process.h"
 #include "stdint.h"
 #include "err.h"
+#include "libk.h"
 
 /**************/
 /* FileSystem */
@@ -198,12 +199,17 @@ public:
 
     long mkdir(const char* name) {
 
+    	if(K::strlen(name) >= 12)
+    		return ERR_FL_NAMELEN;
+    	if(lookup(name))
+    		return ERR_FL_EXIST;
     	//Debug::printf("in mkdir..\n");
     	Fat439* rootfs = ((Fat439*)FileSystem::rootfs);
     	uint32_t blockSize = rootfs->dev->blockSize;
 
-    	if(start == rootfs->super.root && (content->getLength() + HEADER_SZ >= rootfs->dev->blockSize))
+    	if(start == rootfs->super.root && (content->getLength() + HEADER_SZ + DIR_ENTRY_SZ >= rootfs->dev->blockSize))
     		return ERR_NO_ROOT_SPACE;
+
 
     	//Debug::printf(" rem next avail..\n");
     	uint32_t blockToUse = rootfs->remNextAvail();

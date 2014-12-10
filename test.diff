@@ -1,6 +1,6 @@
 9a10
 > in Fat439Directory constructor
-28,74c29,131
+28,74c29,90
 < shell:/$ echo This is cool
 < This is cool
 < shell:/$     echo    I know    how  to         handle  spaces   
@@ -77,13 +77,8 @@
 > resizing
 > shell:/$ mkdir DIR14
 > resizing
-> shell:/$ mkdir DIR15
-> resizing
-> shell:/$ mkdir DIR16
-> resizing
-> shell:/$ mkdir DIR17FOO
-> writing again
-> resizing
+> shell:/$ mkdir DIR14
+> Error: Directory with that name already exists.
 > shell:/$ ls
 > mkdir.c
 > mkdir
@@ -114,43 +109,7 @@
 > DIR12
 > DIR13
 > DIR14
-> DIR15
-> DIR16
-> DIR17FOODIR17FOO
-> shell:/$ mkdir DIR18
->  Error: Maximum allotted space for root directory reached.
-> shell:/$ ls
-> mkdir.c
-> mkdir
-> shutdown
-> shutdown.c
-> shell.c
-> shell
-> ls.c
-> ls
-> echo
-> echo.c
-> cat.c
-> cat
-> f1.txt
-> f2.txt
-> panic
-> DIR1
-> DIR2
-> DIR3
-> DIR4
-> DIR5
-> DIR6
-> DIR7
-> DIR8
-> DIR9
-> DIR10
-> DIR11
-> DIR12
-> DIR13
-> DIR14
-> DIR15
-> DIR16
-> DIR17FOODIR17FOO
-76d132
+> shell:/$ pwd
+> /
+76d91
 < 

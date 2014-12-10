@@ -8,12 +8,41 @@
 typedef struct
 {
 	struct dir* prevDir;
+	uint32_t start; //start block
 	char* currDir;
 	struct dir* nextDir;
 } dir;
 
+
 dir* root;
 dir* currDir;
+
+
+
+char** delimitBy(char* str, char delimiter) {
+
+}
+void pwd() {
+	puts("/");
+	dir* thisDir = currDir;
+	while(thisDir->prevDir != 0)
+		thisDir = (dir*)thisDir->prevDir;
+
+	if(thisDir) {
+		char* directory = thisDir->currDir;
+		if(directory)
+			puts(directory);
+
+
+		while(thisDir->nextDir != 0) {
+			if(directory) puts("/");
+			thisDir = (dir*)thisDir->nextDir;
+			directory = thisDir->currDir;
+			if(directory)
+				puts(directory);
+		}
+	}
+}
 
 void notFound(char* cmd) {
     puts(cmd);
@@ -27,10 +56,20 @@ void notFound(char* cmd) {
  * 0 => the program doesn't accept arguments
  * 1...n => the program accepts n arguments
  * -2 => the program accepts a variable number of arguments
- * -3 => type isn't elf, CAT it
+ * -3 => nothing needs to be done, already handled in checkProg
+ * -4 => cd
  */
 long checkProg(char* prog) {
 	//long i = 0;
+
+	if(prog[0] == 'p' && prog[1] == 'w' && prog[2] == 'd' && prog[3] == 0) {
+		pwd();
+		putchar('\n');
+		return -3;
+	}
+	else if(prog[0] == 'c' && prog[1] == 'd' == prog[2] == 0) {
+		return -4;
+	}
 	long fd = open(prog);
 	if(fd <= 0) return -1;
 
@@ -64,7 +103,11 @@ void runProg(char* in) {
 	long progIdx = 0;
 	while(in[idx] != ' ' && in[idx] != '\r' && in[idx] != 0) prog[progIdx++] = in[idx++];
 	long numArgs = checkProg(prog);
-	if(numArgs == -1) {
+	if(numArgs == -4) {
+		while(in[idx] != 0 && in[idx] != '\r') ++idx;
+		if(in[idx] == '.')
+	}
+	else if(numArgs == -1) {
 		if(prog[0] != 0)
 			notFound(prog);
 		free(prog);
@@ -131,27 +174,7 @@ void runProg(char* in) {
 
 
 
-void pwd(dir* currd) {
-	puts("/");
-	dir* thisDir = currd;
-	while(thisDir->prevDir != 0)
-		thisDir = (dir*)thisDir->prevDir;
 
-	if(thisDir) {
-		char* directory = thisDir->currDir;
-		if(directory)
-			puts(directory);
-
-
-		while(thisDir->nextDir != 0) {
-			if(directory) puts("/");
-			thisDir = (dir*)thisDir->nextDir;
-			directory = thisDir->currDir;
-			if(directory)
-				puts(directory);
-		}
-	}
-}
 
 int main() {
 
@@ -166,7 +189,7 @@ int main() {
 
 	while (1) {
         puts("shell:");
-        pwd(currDir);
+        pwd();
         puts("$ ");
         char* in = gets();
         long id = fork();

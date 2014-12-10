@@ -11,6 +11,8 @@
 #define ERR_NOT_DIR (-1007)
 #define ERR_NO_ROOT_SPACE (-1008)
 #define ERR_DEVWRITE (-1009)
+#define ERR_FL_NAMELEN (-1010)
+#define ERR_FL_EXIST (-1011)
 
 
 #endif

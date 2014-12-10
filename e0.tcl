@@ -58,19 +58,8 @@ expect "shell:/$ "
 send "mkdir DIR14\r"
 
 expect "shell:/$ "
-send "mkdir DIR15\r"
+send "mkdir DIR14\r"
 
-expect "shell:/$ "
-send "mkdir DIR16\r"
-
-expect "shell:/$ "
-send "mkdir DIR17FOO\r"
-
-expect "shell:/$ "
-send "ls\r"
-
-expect "shell:/$ "
-send "mkdir DIR18\r"
 
 #expect "shell:/$ "
 #send "mkdir DIR19\r"
@@ -81,6 +70,9 @@ send "mkdir DIR18\r"
 
 expect "shell:/$ "
 send "ls\r"
+
+expect "shell:/$ "
+send "pwd\r"
 
 expect "shell:/$ "
 send "shutdown\r"
