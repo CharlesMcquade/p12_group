@@ -176,7 +176,7 @@ mkdir:
 	int $100
 	ret
 
-	# char** cd(char** filePath)
+	# long cd(char** filePath)
 	.global cd
 cd:
 	mov $17, %eax
@@ -185,5 +185,13 @@ cd:
 	int $100
 	ret
 
+	# long rm(char* fileName, char** args)
+	.global rm
+rm:
+	mov $18, %eax
+	mov 4(%esp), %ecx
+	mov 4(%esp), %edx
+	int $100
+	ret
 
 

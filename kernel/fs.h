@@ -77,6 +77,7 @@ public:
     virtual long mkdir(const char* name) = 0;
     virtual File* lookupFile(const char* name) = 0;
     virtual Directory* lookupDirectory(const char *name) = 0;
+    virtual long remove(const char* name) = 0;
     virtual Directory* lookupDirectory(const char** path) {
     	long n = 0;
     	Directory* curr = this;
@@ -95,6 +96,7 @@ class FileSystem {
 public:
      static FileSystem *rootfs;    // the root file system
      static void init(FileSystem *rfs);
+     virtual void sync() = 0;
 
      BlockDevice *dev;
      Directory *rootdir;           // the root directory
@@ -122,11 +124,18 @@ public:
     OpenFilePtr *openFiles;
     Fat439(BlockDevice *dev);
     OpenFile* openFile(uint32_t start);
+    void sync() {
+    	syncFAT();
+    	syncSuper();
+    }
     void closeFile(OpenFile* of);
+    void addAvailBlk(uint32_t availBlk);
     uint32_t nextAvailBlk();
     uint32_t remNextAvail();
     uint32_t nextBlk(uint32_t blk);
     void setNextBlk(uint32_t blk, uint32_t nextBlk);
+    void syncSuper();
+    void syncFAT();
 };
 
 #endif

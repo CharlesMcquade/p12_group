@@ -1,4 +1,4 @@
-PROGS = shell ls shutdown echo cat mkdir
+PROGS = shell ls shutdown echo cat mkdir rm
 
 all : $(PROGS)
 
@@ -15,6 +15,8 @@ shutdown : CFILES=shutdown.c libc.c heap.c
 cat : CFILES=cat.c libc.c heap.c
 
 mkdir : CFILES= mkdir.c libc.c heap.c
+
+rm : CFILES= rm.c libc.c heap.c 
 
 $(PROGS) : % : Makefile $(OFILES)
 	ld -N -m elf_i386 -e start -Ttext=0x80000000 -o $@ $(OFILES)

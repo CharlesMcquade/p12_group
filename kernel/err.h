@@ -15,6 +15,7 @@
 #define ERR_FL_EXIST (-1011)
 #define ERR_INVL_CHAR (-1012)
 #define ERR_CLOSE_WD (-1013)
+#define ERR_IS_DIR (-1014)
 
 
 #endif

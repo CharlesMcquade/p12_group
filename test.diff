@@ -1,8 +1,10 @@
-12c12
+12c12,14
 < shell:/$ ls
 ---
 > shell:$ ls
-28,76c28,57
+> rm.c
+> rm
+28,76c30,61
 < shell:/$ echo This is cool
 < This is cool
 < shell:/$     echo    I know    how  to         handle  spaces   
@@ -63,6 +65,8 @@
 > foo
 > shell:$ cd ../
 > shell:$ ls
+> rm.c
+> rm
 > mkdir.c
 > mkdir
 > shutdown

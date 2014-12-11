@@ -4,6 +4,7 @@
 //p12 additions
 extern long mkdir(char* fileName, char** filePath);
 extern long cd(char** filePath);
+extern long rm(char* fileName, char** args);
 
 extern long ls();
 extern long exit(long status);

@@ -188,6 +188,14 @@ extern "C" long syscallHandler(uint32_t* context, long num, long a0, long a1) {
 
     	return 0;
     }
+    case 18 : /* long rm(char* fileName, char** args) */
+    {
+    	const char* fileName = (const char*)a0;
+    	//const char** args = (const char**)a1;
+    	if(fileName) {
+    		return ((Directory*)Process::current->resources->get(1, ResourceType::DIRECTORY))->remove(fileName);
+    	} else return ERR_NO_ID;
+    }
     default:
         Process::trace("syscall(%d,%d,%d)",num,a0,a1);
         return -1;

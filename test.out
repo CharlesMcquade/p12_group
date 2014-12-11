@@ -10,6 +10,8 @@ Pit::init requested:1000Hz, actual:1000Hz
 [] initialized root filesystem
 [] Let there be processes
 shell:$ ls
+rm.c
+rm
 mkdir.c
 mkdir
 shutdown
@@ -35,6 +37,8 @@ shell:$ ls
 foo
 shell:$ cd ../
 shell:$ ls
+rm.c
+rm
 mkdir.c
 mkdir
 shutdown
